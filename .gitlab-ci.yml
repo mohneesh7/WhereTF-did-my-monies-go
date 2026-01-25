@@ -1,0 +1,32 @@
+stages:
+  - test
+
+variables:
+  PYTHON_VERSION: "3.12"
+
+# Cache uv and venv for speed
+cache:
+  paths:
+    - .venv/
+    - .uv-cache/
+
+test:
+  stage: test
+  image: python:3.12-slim
+
+  before_script:
+    # Install uv
+    - pip install uv
+    # Create venv and install deps
+    - uv venv
+    - uv pip install -r pyproject.toml
+    # Make project importable
+    - export PYTHONPATH=$CI_PROJECT_DIR
+
+  script:
+    - uv run pytest -v
+
+  artifacts:
+    when: always
+    reports:
+      junit: junit.xml
