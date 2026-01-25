@@ -1,32 +1,54 @@
 stages:
+  - lint
   - test
 
+# Global variables
 variables:
   PYTHON_VERSION: "3.12"
+  UV_CACHE_DIR: "$CI_PROJECT_DIR/.uv-cache"
+  PYTHONPATH: "$CI_PROJECT_DIR"
 
-# Cache uv and venv for speed
+# Default image for all jobs
+image: python:3.12-slim
+
+# Global cache
 cache:
+  key: "$CI_COMMIT_REF_SLUG"
   paths:
-    - .venv/
     - .uv-cache/
+    - .venv/
+
+before_script:
+  # Install uv
+  - pip install --no-cache-dir uv
+  # Create venv
+  - uv venv
+  # Install project dependencies
+  - uv pip install -r pyproject.toml
+
+# ---------------- LINT JOB ---------------- #
+
+lint:
+  stage: lint
+  script:
+    - uv pip install ruff
+    - uv run ruff check money_manager tests
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push" || $CI_PIPELINE_SOURCE == "merge_request_event"
+
+# ---------------- TEST JOB ---------------- #
 
 test:
   stage: test
-  image: python:3.12-slim
-
-  before_script:
-    # Install uv
-    - pip install uv
-    # Create venv and install deps
-    - uv venv
-    - uv pip install -r pyproject.toml
-    # Make project importable
-    - export PYTHONPATH=$CI_PROJECT_DIR
-
   script:
-    - uv run pytest -v
-
+    - uv pip install pytest pytest-asyncio pytest-cov
+    - uv run pytest -v --cov=money_manager --cov-report=xml
   artifacts:
     when: always
     reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
       junit: junit.xml
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push" || $CI_PIPELINE_SOURCE == "merge_request_event"
