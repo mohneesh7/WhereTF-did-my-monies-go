@@ -22,7 +22,7 @@ before_script:
   # Install uv
   - pip install --no-cache-dir uv
   # Create venv
-  - uv venv
+  - uv venv --clear
   # Install project dependencies
   - uv pip install -r pyproject.toml
 
