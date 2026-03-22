@@ -79,7 +79,7 @@ class FinanceAgent:
             else:
                 plan_text = await self.llm.generate_text(plan_input, system_prompt=planner_prompt)
                 plan = json.loads(plan_text)
-        except (json.JSONDecodeError, Exception) as e:
+        except (json.JSONDecodeError, Exception):
             # If planning fails, respond conversationally without tools
             return await self._direct_response(message, current_date)
 

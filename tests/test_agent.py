@@ -127,8 +127,6 @@ async def test_agent_direct_response(repo):
 @pytest.mark.asyncio
 async def test_agent_builds_tool_descriptions():
     """Agent should build tool descriptions from registry."""
-    from money_manager.app.agent import FinanceAgent
-    repo_mock = None  # We just need to test description building
 
     # Can't instantiate without repo, so test the method directly
     from money_manager.app.tools import TOOL_REGISTRY
